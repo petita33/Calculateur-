@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Atelier — Meubles</title>
+<style>
+:root{--bg:#17181A;--s:#201E1B;--s2:#2A2724;--l:#3A362F;--ink:#F1EAE0;--dim:#A69C8D;--f:#6E6558;--b:#C98A4B;--g:#FFB454;--r:#C8664B}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px system-ui,sans-serif;padding:22px 14px 80px}
+.w{max-width:640px;margin:0 auto}h1{font-size:24px;margin:0 0 4px}.sub{color:var(--dim);margin:0 0 16px;font-size:13px}
+input,select,textarea{width:100%;background:var(--s);border:1px solid var(--l);color:var(--ink);border-radius:8px;padding:10px;font:inherit;outline:0}
+input:focus,select:focus,textarea:focus{border-color:var(--b)}textarea{min-height:60px}
+.btn{border:1px solid var(--l);background:var(--s2);color:var(--ink);border-radius:8px;padding:10px 14px;font:inherit;font-weight:500;cursor:pointer}
+.p{background:var(--b);border-color:var(--b);color:#1A1611;font-weight:600}.d{background:0;border-color:transparent;color:var(--r)}
+.card{background:var(--s);border:1px solid var(--l);border-radius:12px;padding:14px;margin-bottom:12px}
+.k{font:10.5px monospace;color:var(--f);letter-spacing:.08em;margin-bottom:10px;text-transform:uppercase}
+.row{display:flex;gap:10px}.row>*{flex:1;min-width:0}.fd{margin-bottom:10px}.fd label{display:block;font-size:12px;color:var(--dim);margin-bottom:5px}
+.it{display:flex;gap:10px;align-items:center;background:var(--s);border:1px solid var(--l);border-radius:12px;padding:9px;margin-bottom:8px;cursor:pointer}
+.it img,.ph{width:56px;height:56px;border-radius:8px;object-fit:cover;background:var(--s2);flex:none}
+.it b{display:block}.it small{color:var(--f)}.it .m{margin-left:auto;text-align:right;font-family:monospace}
+.ok{color:var(--g)}.ko{color:var(--r)}.t{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed var(--l)}
+.t.h{border:0;border-top:1px solid var(--l);margin-top:6px;padding-top:10px;font-size:16px;font-weight:600}.t span:last-child{font-family:monospace}
+.g{display:flex;gap:8px;flex-wrap:wrap}.g div{position:relative}.g img{width:84px;height:84px;object-fit:cover;border-radius:8px}
+.g button{position:absolute;top:2px;right:2px;background:#000a;color:#fff;border:0;border-radius:50%;width:22px;height:22px}
+.n{font-size:12px;color:var(--f);margin-top:8px}.hide{display:none}
+#po{position:fixed;inset:0;background:#fff;color:#1E1C19;overflow:auto;padding:16px;z-index:9}#po .no{display:flex;gap:8px;margin-bottom:12px}#po .no .btn{color:#1E1C19}#po .p{color:#1A1611}#pa h2{margin:0 0 6px}#pa table{width:100%;border-collapse:collapse;margin:6px 0 12px}#pa td{padding:5px 0;border-bottom:1px solid #eee}#pa td:last-child{text-align:right}#pa img{max-width:150px;max-height:150px;border-radius:6px;margin:0 6px 6px 0}@media print{body{background:#fff;padding:0}.w,.no{display:none}#po{position:static;padding:0}}
+</style></head><body><div class="w">
+
+<div id="vL"><h1>Meubles</h1><p class="sub">Achat, coûts, vente et bénéfice de chaque pièce.</p>
+<button class="btn p" id="add" style="width:100%;margin-bottom:12px">+ Nouveau meuble</button>
+<div id="sum" class="n" style="margin:0 0 10px"></div><div id="list"></div>
+<div class="card" style="margin-top:18px"><div class="k">Sauvegarde</div>
+<div class="row"><button class="btn" id="exp">Exporter</button><button class="btn" id="imp">Importer</button></div>
+<input type="file" id="impF" accept=".json" class="hide"><textarea id="bk" class="hide" readonly style="margin-top:8px;font:11px monospace"></textarea>
+<div class="n" id="bn"></div><div class="n" id="mode"></div></div></div>
+
+<div id="vE" class="hide">
+<div class="row" style="margin-bottom:12px"><button class="btn" id="back">← Liste</button><button class="btn" id="pdf">Fiche PDF</button><button class="btn d" id="del">Supprimer</button></div>
+
+<div class="card"><div class="k">01 — Le meuble</div>
+<div class="fd"><label>Nom</label><input data-k="nom" placeholder="ex. Buffet chêne"></div>
+<div class="row"><div class="fd"><label>Prix d'achat (€)</label><input data-k="achatPrix" data-n inputmode="decimal"></div>
+<div class="fd"><label>Date d'achat</label><input type="date" data-k="achatDate"></div></div>
+<div class="row"><div class="fd"><label>Comment trouvé</label><input data-k="source" list="src" placeholder="Vide-grenier…"></div>
+<div class="fd"><label>Commune</label><input data-k="commune"></div></div>
+<div class="row"><div class="fd"><label>Long. (cm)</label><input data-k="dimL" data-n inputmode="decimal"></div><div class="fd"><label>Larg. (cm)</label><input data-k="dimW" data-n inputmode="decimal"></div><div class="fd"><label>Haut. (cm)</label><input data-k="dimH" data-n inputmode="decimal"></div></div>
+<div class="fd"><label>Commentaire</label><textarea data-k="comment"></textarea></div>
+<div class="g" id="gal"></div><div style="margin-top:8px"><button class="btn" id="phB">+ Photos</button></div>
+<input type="file" id="phF" accept="image/*" multiple class="hide">
+<datalist id="src"><option>Vide-grenier<option>Vide-maison<option>En ligne<option>Don<option>Brocante</datalist></div>
+
+<div class="card"><div class="k">02 — Coûts (seuls les montants saisis comptent)</div>
+<div class="n" style="margin:0 0 6px">Gasoil au km</div>
+<div id="fK"><div class="row"><div class="fd"><label>Km parcourus</label><input data-k="km" data-n inputmode="decimal"></div>
+<div class="fd"><label>L/100 km</label><input data-k="conso" data-n inputmode="decimal"></div>
+<div class="fd"><label>Gasoil €/L</label><input data-k="gazole" data-n inputmode="decimal"></div></div></div>
+<div class="fd"><label>Carburant : montant libre (€)</label><input data-k="fuelLibre" data-n inputmode="decimal"></div>
+<div class="row"><div class="fd"><label>Sablage : prix du sac (€)</label><input data-k="sacPrix" data-n inputmode="decimal"></div>
+<div class="fd"><label>Nombre de sacs</label><input data-k="sacQty" data-n inputmode="decimal"></div></div>
+<div class="row"><div class="fd"><label>Menuiserie (€)</label><input data-k="menuiserie" data-n inputmode="decimal"></div>
+<div class="fd"><label>Serrures (€)</label><input data-k="serrures" data-n inputmode="decimal"></div></div>
+<div class="row"><div class="fd"><label>Peinture (€)</label><input data-k="peinture" data-n inputmode="decimal"></div>
+<div class="fd"><label>Déco (€)</label><input data-k="deco" data-n inputmode="decimal"></div></div>
+<div id="lib"></div><button class="btn" id="addL">+ Ligne libre</button>
+<div style="margin-top:12px"><div class="t"><span>Achat du meuble</span><span id="cA"></span></div><div class="t"><span>Essence</span><span id="cF"></span></div><div class="t"><span>Sablage</span><span id="cS"></span></div>
+<div class="t h"><span>Coûts totaux</span><span id="cT"></span></div></div></div>
+
+<div class="card"><div class="k">03 — Estimation</div>
+<div class="row"><div class="fd"><label>Temps estimé (h)</label><input data-k="heures" data-n inputmode="decimal"></div>
+<div class="fd"><label>Prix de vente estimé (€)</label><input data-k="prixEst" data-n inputmode="decimal"></div></div>
+<div class="t"><span>Bénéfice estimé</span><span id="eB"></span></div><div class="t"><span>Par heure</span><span id="eH"></span></div></div>
+
+<div class="card"><div class="k">04 — Vente</div>
+<div class="row"><div class="fd"><label>Statut</label><select data-k="statut"><option value="">En cours</option><option value="vendu">Vendu</option></select></div>
+<div class="fd"><label>Date de vente</label><input type="date" data-k="v.date"></div></div>
+<div class="row"><div class="fd"><label>Prix réel de vente (€)</label><input data-k="v.prix" data-n inputmode="decimal"></div>
+<div class="fd"><label>Paiement</label><input data-k="v.paiement" list="pay"></div></div>
+<datalist id="pay"><option>Espèces<option>Virement<option>Chèque<option>PayPal<option>Carte bancaire</datalist>
+<div class="fd"><label>Acheteur (nom ou pseudo)</label><input data-k="v.acheteur"></div>
+<div class="fd"><label>Adresse</label><textarea data-k="v.adresse"></textarea></div>
+<div class="fd"><label>Livraison</label><select data-k="v.livr"><option value="">Non</option><option value="1">Oui</option></select></div>
+<div id="lv"><div class="row"><div class="fd"><label>Lieu</label><input data-k="v.livLieu"></div><div class="fd"><label>Tarif (€)</label><input data-k="v.livTarif" data-n inputmode="decimal"></div></div>
+<div class="fd"><select data-k="v.livMode"><option value="fact">Facturé à l'acheteur (gain)</option><option value="charge">À ma charge (coût)</option></select></div></div>
+<div class="t"><span>Gain</span><span id="vG"></span></div><div class="t"><span>Coûts</span><span id="vC"></span></div>
+<div class="t h"><span>Bénéfice réel</span><span id="vB"></span></div></div>
+<div class="n" id="sv"></div></div>
+</div>
+<div id="po" class="hide"><div class="no"><button class="btn p" id="pp">Imprimer / Enregistrer en PDF</button><button class="btn" id="pc">Fermer</button></div><div id="pa"></div></div>
+<script>
+const $=i=>document.getElementById(i),num=v=>{const n=parseFloat(String(v??'').replace(',','.'));return isFinite(n)?n:0},
+fmt=n=>n.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+' €',
+esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])),
+get=(o,p)=>p.split('.').reduce((a,k)=>a&&a[k],o),
+set=(o,p,v)=>{const a=p.split('.'),l=a.pop();let t=o;a.forEach(k=>t=t[k]=t[k]||{});t[l]=v};
+const DB=(()=>{const h=window.storage;if(h)return{mode:'Claude',get:k=>h.get(k,false),set:(k,v)=>h.set(k,v,false),delete:k=>h.delete(k,false),list:p=>h.list(p,false)};
+const P='meubles:',S=(()=>{try{localStorage.setItem('_t','1');localStorage.removeItem('_t');return localStorage}catch(e){return null}})(),m={};
+return{mode:S?'navigateur':'mémoire',async get(k){const v=S?S.getItem(P+k):m[k];if(v==null)throw 0;return{value:v}},
+async set(k,v){S?S.setItem(P+k,v):m[k]=v},async delete(k){S?S.removeItem(P+k):delete m[k]},
+async list(p){const o=S?Object.keys(S).filter(k=>k.startsWith(P)).map(k=>k.slice(P.length)):Object.keys(m);return{keys:o.filter(k=>k.startsWith(p))}}}})();
+let M=[],cur=null,ph=[],tm,dc=0;
+const nw=()=>({id:'m'+Date.now(),nom:'',fuelMode:'km',conso:7.5,gazole:1.7,libres:[],v:{livMode:'fact'}});
+function calc(m){const f=num(m.fuelLibre)+num(m.km)*num(m.conso)/100*num(m.gazole),
+s=num(m.sacPrix)*num(m.sacQty),a=num(m.achatPrix),
+c=a+f+s+num(m.menuiserie)+num(m.serrures)+num(m.peinture)+num(m.deco)+(m.libres||[]).reduce((t,l)=>t+num(l.v),0),
+v=m.v||{},lt=v.livr?num(v.livTarif):0,g=num(v.prix)+(v.livr&&v.livMode!='charge'?lt:0),
+cc=c+(v.livr&&v.livMode=='charge'?lt:0);return{f,s,a,c,g,cc,b:g-cc,e:num(m.prixEst)-c}}
+async function load(){M=[];try{for(const k of(await DB.list('meuble:')).keys)try{M.push(JSON.parse((await DB.get(k)).value))}catch(e){}}catch(e){}
+M.sort((a,b)=>(b.achatDate||'').localeCompare(a.achatDate||''));
+const sold=M.filter(m=>m.statut=='vendu'),tot=sold.reduce((t,m)=>t+calc(m).b,0);
+$('sum').textContent=M.length?`${M.length} meuble(s) · ${sold.length} vendu(s) · bénéfice total ${fmt(tot)}`:'';
+$('list').innerHTML=M.length?M.map(m=>{const c=calc(m),v=m.statut=='vendu';return`<div class="it" data-i="${m.id}">${m.thumb?`<img src="${m.thumb}">`:'<div class="ph"></div>'}
+<div><b>${esc(m.nom||'Sans nom')}</b><small>${esc(m.commune||'')} ${v?'· vendu':'· en cours'}</small></div>
+<div class="m ${v?(c.b>=0?'ok':'ko'):''}">${v?fmt(c.b):fmt(c.c)}<br><small>${v?'bénéfice':'coûts'}</small></div></div>`}).join(''):'<div class="n">Aucun meuble pour l\'instant.</div>';
+$('mode').textContent={Claude:'Données enregistrées dans Claude.',navigateur:'Données enregistrées dans ce navigateur : exportez régulièrement.',mémoire:'Enregistrement bloqué par le navigateur : exportez.'}[DB.mode];}
+function show(e){$('vL').classList.toggle('hide',e);$('vE').classList.toggle('hide',!e);scrollTo(0,0)}
+async function open(id){cur=M.find(m=>m.id==id)||nw();ph=[];try{ph=JSON.parse((await DB.get('meuble-photos:'+cur.id)).value)}catch(e){}
+document.querySelectorAll('[data-k]').forEach(e=>{const v=get(cur,e.dataset.k);e.value=v==null?'':(e.dataset.n&&v!==''?String(v).replace('.',','):v)});
+rl();gal();upd();show(1);try{history.pushState({e:1},'')}catch(e){}}
+function rl(){$('lib').innerHTML=(cur.libres||[]).map((l,i)=>`<div class="row fd"><input data-l="n${i}" placeholder="Libellé" value="${esc(l.n)}"><input data-l="v${i}" inputmode="decimal" placeholder="€" value="${esc(l.v)}" style="max-width:90px"><button class="btn d" data-r="${i}" style="flex:none">✕</button></div>`).join('')}
+function gal(){$('gal').innerHTML=ph.map((p,i)=>`<div><img src="${p}"><button data-p="${i}">✕</button></div>`).join('')}
+function upd(){const c=calc(cur);
+$('lv').classList.toggle('hide',!(cur.v||{}).livr);
+const T={cA:c.a,cF:c.f,cS:c.s,cT:c.c,eB:c.e,vG:c.g,vC:c.cc,vB:c.b};for(const k in T)$(k).textContent=fmt(T[k]);
+$('eH').textContent=num(cur.heures)>0?fmt(c.e/num(cur.heures)):'—';$('vB').className=c.b>=0?'ok':'ko'}
+const rs=(d,mx,q)=>new Promise(r=>{const i=new Image();i.onload=()=>{const s=Math.min(1,mx/Math.max(i.width,i.height)),c=document.createElement('canvas');c.width=i.width*s;c.height=i.height*s;c.getContext('2d').drawImage(i,0,0,c.width,c.height);r(c.toDataURL('image/jpeg',q))};i.onerror=()=>r(d);i.src=d});
+const rd=f=>new Promise(r=>{const x=new FileReader();x.onload=()=>r(x.result);x.readAsDataURL(f)});
+function sched(){clearTimeout(tm);$('sv').textContent='';tm=setTimeout(save,600)}
+async function save(){if(!cur)return;cur.thumb=ph[0]?await rs(ph[0],120,.6):'';
+try{await DB.set('meuble:'+cur.id,JSON.stringify(cur));if(ph.length)await DB.set('meuble-photos:'+cur.id,JSON.stringify(ph));else await DB.delete('meuble-photos:'+cur.id).catch(()=>0);
+$('sv').textContent='Enregistré · '+new Date().toLocaleTimeString('fr-FR')}catch(e){$('sv').textContent="Échec de l'enregistrement (photos trop lourdes ?)"}}
+$('vE').addEventListener('input',e=>{const t=e.target;if(t.dataset.k){set(cur,t.dataset.k,t.dataset.n?t.value:t.value);}
+else if(t.dataset.l){const k=t.dataset.l;cur.libres[+k.slice(1)][k[0]]=t.value}upd();sched()});
+$('vE').addEventListener('click',e=>{const t=e.target;if(t.dataset.r!=null){cur.libres.splice(+t.dataset.r,1);rl();upd();sched()}
+if(t.dataset.p!=null){ph.splice(+t.dataset.p,1);gal();sched()}});
+$('addL').onclick=()=>{cur.libres.push({n:'',v:''});rl()};
+$('phB').onclick=()=>$('phF').click();
+$('phF').onchange=async e=>{for(const f of e.target.files)ph.push(await rs(await rd(f),800,.7));e.target.value='';gal();sched()};
+$('add').onclick=()=>{cur=null;open()};
+$('list').onclick=e=>{const i=e.target.closest('.it');if(i)open(i.dataset.i)};
+async function close(){await save();show(0);load()}
+$('back').onclick=()=>{try{history.back()}catch(e){close()}};
+addEventListener('popstate',()=>{if(!$('vE').classList.contains('hide'))close()});
+$('del').onclick=async()=>{if(!dc){$('del').textContent='Confirmer la suppression';dc=setTimeout(()=>{dc=0;$('del').textContent='Supprimer'},4000);return}
+clearTimeout(dc);dc=0;$('del').textContent='Supprimer';clearTimeout(tm);const id=cur.id;cur=null;for(const k of['meuble:','meuble-photos:'])try{await DB.delete(k+id)}catch(e){}
+show(0);load()};
+$('pdf').onclick=()=>{const m=cur,c=calc(m),v=m.v||{},r=(a,b)=>`<tr><td>${a}</td><td>${b}</td></tr>`,q=(a,n)=>n?r(a,fmt(n)):'',
+dm=[m.dimL,m.dimW,m.dimH].some(x=>x)?`${esc(m.dimL||'?')} × ${esc(m.dimW||'?')} × ${esc(m.dimH||'?')} cm`:'—';
+$('pa').innerHTML=`<h2>${esc(m.nom||'Sans nom')}</h2>${ph.slice(0,4).map(p=>`<img src="${p}">`).join('')}
+<table>${r('Dimensions',dm)}${r('Acheté le',esc(m.achatDate||'—'))}${r('Trouvé',esc(m.source||'—')+' · '+esc(m.commune||'—'))}${r('Commentaire',esc(m.comment||'—'))}</table>
+<b>Coûts</b><table>${q('Achat du meuble',c.a)}${q('Carburant',c.f)}${q('Sablage',c.s)}${q('Menuiserie',num(m.menuiserie))}${q('Serrures',num(m.serrures))}${q('Peinture',num(m.peinture))}${q('Déco',num(m.deco))}${(m.libres||[]).map(l=>q(esc(l.n||'Divers'),num(l.v))).join('')}${r('<b>Total</b>','<b>'+fmt(c.c)+'</b>')}</table>
+<b>Estimation</b><table>${r('Temps estimé',num(m.heures)?num(m.heures)+' h':'—')}${r('Prix de vente estimé',fmt(num(m.prixEst)))}${r('Bénéfice estimé',fmt(c.e))}</table>
+${m.statut=='vendu'?`<b>Vente</b><table>${r('Date',esc(v.date||'—'))}${r('Acheteur',esc(v.acheteur||'—'))}${r('Adresse',esc(v.adresse||'—'))}${r('Paiement',esc(v.paiement||'—'))}${r('Livraison',v.livr?esc(v.livLieu||'')+' '+fmt(num(v.livTarif))+(v.livMode=='charge'?' (à ma charge)':' (facturé)'):'Non')}${r('Prix réel de vente',fmt(num(v.prix)))}${r('<b>Bénéfice réel</b>','<b>'+fmt(c.b)+'</b>')}</table>`:''}`;
+$('po').classList.remove('hide')};
+$('pc').onclick=()=>$('po').classList.add('hide');$('pp').onclick=()=>print();
+$('exp').onclick=async()=>{const o={};for(const k of(await DB.list('meuble')).keys)try{o[k]=(await DB.get(k)).value}catch(e){}
+const j=JSON.stringify({format:'meubles',entries:o});$('bk').value=j;$('bk').classList.remove('hide');
+try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([j],{type:'application/json'}));a.download='meubles-sauvegarde-'+new Date().toISOString().slice(0,10)+'.json';a.click()}catch(e){}
+$('bn').textContent=Object.keys(o).length+' éléments. Si rien ne se télécharge, copiez le texte ci-dessus.'};
+$('imp').onclick=()=>$('impF').click();
+$('impF').onchange=async e=>{try{const d=JSON.parse(await e.target.files[0].text());for(const k in d.entries)await DB.set(k,d.entries[k]);$('bn').textContent='Importé.';load()}catch(x){$('bn').textContent='Fichier invalide.'}e.target.value=''};
+load();
+</script></body></html>
