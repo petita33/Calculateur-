@@ -86,7 +86,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--b)}textarea{min-heigh
 <div class="fd"><label>Livraison</label><select data-k="v.livr"><option value="">Non</option><option value="1">Oui</option></select></div>
 <div id="lv"><div class="row"><div class="fd"><label>Lieu</label><input data-k="v.livLieu"></div><div class="fd"><label>Livraison payée par l'acheteur (€)</label><input data-k="v.livTarif" data-n inputmode="decimal"></div></div></div>
 <div class="g" id="galF"></div><div style="margin:8px 0 12px"><button class="btn" id="phFB">+ Photos du meuble fini</button></div><input type="file" id="phFF" accept="image/*" multiple class="hide">
-<div class="t"><span>Recette reçue</span><span id="vG"></span></div><div class="t"><span>Commission plateforme</span><span id="vK"></span></div><div class="t"><span>Livraison payée</span><span id="vL"></span></div><div class="t"><span>Coûts</span><span id="vC"></span></div>
+<div class="t"><span>Recette reçue</span><span id="vG"></span></div><div class="t"><span>Commission plateforme</span><span id="vK"></span></div><div class="t"><span>Livraison payée</span><span id="vLv"></span></div><div class="t"><span>Coûts</span><span id="vC"></span></div>
 <div class="t h"><span>Gain pour moi</span><span id="vB"></span></div></div>
 <div class="n" id="sv"></div></div>
 </div>
@@ -124,7 +124,7 @@ function rl(){$('lib').innerHTML=(cur.libres||[]).map((l,i)=>`<div class="row fd
 function gal(){$('gal').innerHTML=ph.map((p,i)=>`<div><img src="${p}"><button data-p="${i}">✕</button></div>`).join('');$('galF').innerHTML=phf.map((p,i)=>`<div><img src="${p}"><button data-f="${i}">✕</button></div>`).join('')}
 function upd(){const c=calc(cur);
 $('lv').classList.toggle('hide',!(cur.v||{}).livr);
-const T={cA:c.a,cF:c.f,cS:c.s,cT:c.c,eB:c.e,vG:c.g,vK:c.com,vL:c.lv,vC:c.cc,vB:c.b};for(const k in T)$(k).textContent=fmt(T[k]);
+const T={cA:c.a,cF:c.f,cS:c.s,cT:c.c,eB:c.e,vG:c.g,vK:c.com,vLv:c.lv,vC:c.cc,vB:c.b};for(const k in T)$(k).textContent=fmt(T[k]);
 $('eH').textContent=num(cur.heures)>0?fmt(c.e/num(cur.heures)):'—';$('vB').className=c.b>=0?'ok':'ko'}
 const rs=(d,mx,q)=>new Promise(r=>{const i=new Image();i.onload=()=>{const s=Math.min(1,mx/Math.max(i.width,i.height)),c=document.createElement('canvas');c.width=i.width*s;c.height=i.height*s;c.getContext('2d').drawImage(i,0,0,c.width,c.height);r(c.toDataURL('image/jpeg',q))};i.onerror=()=>r(d);i.src=d});
 const rd=f=>new Promise(r=>{const x=new FileReader();x.onload=()=>r(x.result);x.readAsDataURL(f)});
