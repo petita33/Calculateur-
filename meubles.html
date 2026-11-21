@@ -41,6 +41,9 @@ input:focus,select:focus,textarea:focus{border-color:var(--b)}textarea{min-heigh
 <div class="fd"><label>Date d'achat</label><input type="date" data-k="achatDate"></div></div>
 <div class="row"><div class="fd"><label>Comment trouvé</label><input data-k="source" list="src" placeholder="Vide-grenier…"></div>
 <div class="fd"><label>Commune</label><input data-k="commune"></div></div>
+<div class="fd"><label>Site où je l'ai trouvé</label><input data-k="site" list="web" placeholder="Leboncoin, Facebook…"></div>
+<div class="fd"><label>Vendeur / donateur (nom)</label><input data-k="vendeur"></div>
+<div class="fd"><label>Adresse précise</label><textarea data-k="adresse" style="min-height:46px"></textarea></div>
 <div class="row"><div class="fd"><label>Long. (cm)</label><input data-k="dimL" data-n inputmode="decimal"></div><div class="fd"><label>Larg. (cm)</label><input data-k="dimW" data-n inputmode="decimal"></div><div class="fd"><label>Haut. (cm)</label><input data-k="dimH" data-n inputmode="decimal"></div></div>
 <div class="fd"><label>Commentaire</label><textarea data-k="comment"></textarea></div>
 <div class="g" id="gal"></div><div style="margin-top:8px"><button class="btn" id="phB">+ Photos</button></div>
@@ -71,16 +74,20 @@ input:focus,select:focus,textarea:focus{border-color:var(--b)}textarea{min-heigh
 <div class="card"><div class="k">04 — Vente</div>
 <div class="row"><div class="fd"><label>Statut</label><select data-k="statut"><option value="">En cours</option><option value="vendu">Vendu</option></select></div>
 <div class="fd"><label>Date de vente</label><input type="date" data-k="v.date"></div></div>
-<div class="row"><div class="fd"><label>Prix réel de vente (€)</label><input data-k="v.prix" data-n inputmode="decimal"></div>
+<div class="row"><div class="fd"><label>Prix payé par l'acheteur (€)</label><input data-k="v.prix" data-n inputmode="decimal"></div>
 <div class="fd"><label>Paiement</label><input data-k="v.paiement" list="pay"></div></div>
+<datalist id="web"><option>Leboncoin<option>Facebook Marketplace<option>Selency<option>eBay<option>Vinted<option>Instagram</datalist>
 <datalist id="pay"><option>Espèces<option>Virement<option>Chèque<option>PayPal<option>Carte bancaire</datalist>
+<div class="row"><div class="fd"><label>Recette reçue par moi (€)</label><input data-k="v.recette" data-n inputmode="decimal"></div><div class="fd"><label>Site de vente</label><input data-k="v.site" list="web"></div></div>
+<div class="n" style="margin:-4px 0 10px">Recette = ce que vous touchez pour le meuble après la commission de la plateforme, sans la livraison (elle s'ajoute toute seule au gain). Laissez vide s'il n'y a pas de commission.</div>
+<div class="fd"><label>N° de facture (option)</label><input data-k="v.facture"></div>
 <div class="fd"><label>Acheteur (nom ou pseudo)</label><input data-k="v.acheteur"></div>
 <div class="fd"><label>Adresse</label><textarea data-k="v.adresse"></textarea></div>
 <div class="fd"><label>Livraison</label><select data-k="v.livr"><option value="">Non</option><option value="1">Oui</option></select></div>
-<div id="lv"><div class="row"><div class="fd"><label>Lieu</label><input data-k="v.livLieu"></div><div class="fd"><label>Tarif (€)</label><input data-k="v.livTarif" data-n inputmode="decimal"></div></div>
-<div class="fd"><select data-k="v.livMode"><option value="fact">Facturé à l'acheteur (gain)</option><option value="charge">À ma charge (coût)</option></select></div></div>
-<div class="t"><span>Gain</span><span id="vG"></span></div><div class="t"><span>Coûts</span><span id="vC"></span></div>
-<div class="t h"><span>Bénéfice réel</span><span id="vB"></span></div></div>
+<div id="lv"><div class="row"><div class="fd"><label>Lieu</label><input data-k="v.livLieu"></div><div class="fd"><label>Livraison payée par l'acheteur (€)</label><input data-k="v.livTarif" data-n inputmode="decimal"></div></div></div>
+<div class="g" id="galF"></div><div style="margin:8px 0 12px"><button class="btn" id="phFB">+ Photos du meuble fini</button></div><input type="file" id="phFF" accept="image/*" multiple class="hide">
+<div class="t"><span>Recette reçue</span><span id="vG"></span></div><div class="t"><span>Commission plateforme</span><span id="vK"></span></div><div class="t"><span>Livraison payée</span><span id="vL"></span></div><div class="t"><span>Coûts</span><span id="vC"></span></div>
+<div class="t h"><span>Gain pour moi</span><span id="vB"></span></div></div>
 <div class="n" id="sv"></div></div>
 </div>
 <div id="po" class="hide"><div class="no"><button class="btn p" id="pp">Imprimer / Enregistrer en PDF</button><button class="btn" id="pc">Fermer</button></div><div id="pa"></div></div>
@@ -95,59 +102,61 @@ const P='meubles:',S=(()=>{try{localStorage.setItem('_t','1');localStorage.remov
 return{mode:S?'navigateur':'mémoire',async get(k){const v=S?S.getItem(P+k):m[k];if(v==null)throw 0;return{value:v}},
 async set(k,v){S?S.setItem(P+k,v):m[k]=v},async delete(k){S?S.removeItem(P+k):delete m[k]},
 async list(p){const o=S?Object.keys(S).filter(k=>k.startsWith(P)).map(k=>k.slice(P.length)):Object.keys(m);return{keys:o.filter(k=>k.startsWith(p))}}}})();
-let M=[],cur=null,ph=[],tm,dc=0;
-const nw=()=>({id:'m'+Date.now(),nom:'',fuelMode:'km',conso:7.5,gazole:1.7,libres:[],v:{livMode:'fact'}});
+let M=[],cur=null,ph=[],phf=[],tm,dc=0;
+const nw=()=>({id:'m'+Date.now(),nom:'',fuelMode:'km',conso:7.5,gazole:1.7,libres:[]});
 function calc(m){const f=num(m.fuelLibre)+num(m.km)*num(m.conso)/100*num(m.gazole),
 s=num(m.sacPrix)*num(m.sacQty),a=num(m.achatPrix),
 c=a+f+s+num(m.menuiserie)+num(m.serrures)+num(m.peinture)+num(m.deco)+(m.libres||[]).reduce((t,l)=>t+num(l.v),0),
-v=m.v||{},lt=v.livr?num(v.livTarif):0,g=num(v.prix)+(v.livr&&v.livMode!='charge'?lt:0),
-cc=c+(v.livr&&v.livMode=='charge'?lt:0);return{f,s,a,c,g,cc,b:g-cc,e:num(m.prixEst)-c}}
+v=m.v||{},g=(v.recette!==undefined&&v.recette!=='')?num(v.recette):num(v.prix),lv=v.livr?num(v.livTarif):0,cc=c;return{f,s,a,c,g,lv,cc,b:g+lv-cc,e:num(m.prixEst)-c,com:(v.prix&&v.recette)?num(v.prix)-num(v.recette):0}}
 async function load(){M=[];try{for(const k of(await DB.list('meuble:')).keys)try{M.push(JSON.parse((await DB.get(k)).value))}catch(e){}}catch(e){}
 M.sort((a,b)=>(b.achatDate||'').localeCompare(a.achatDate||''));
 const sold=M.filter(m=>m.statut=='vendu'),tot=sold.reduce((t,m)=>t+calc(m).b,0);
-$('sum').textContent=M.length?`${M.length} meuble(s) · ${sold.length} vendu(s) · bénéfice total ${fmt(tot)}`:'';
+$('sum').textContent=M.length?`${M.length} meuble(s) · ${sold.length} vendu(s) · gain total ${fmt(tot)}`:'';
 $('list').innerHTML=M.length?M.map(m=>{const c=calc(m),v=m.statut=='vendu';return`<div class="it" data-i="${m.id}">${m.thumb?`<img src="${m.thumb}">`:'<div class="ph"></div>'}
 <div><b>${esc(m.nom||'Sans nom')}</b><small>${esc(m.commune||'')} ${v?'· vendu':'· en cours'}</small></div>
-<div class="m ${v?(c.b>=0?'ok':'ko'):''}">${v?fmt(c.b):fmt(c.c)}<br><small>${v?'bénéfice':'coûts'}</small></div></div>`}).join(''):'<div class="n">Aucun meuble pour l\'instant.</div>';
+<div class="m ${v?(c.b>=0?'ok':'ko'):''}">${v?fmt(c.b):fmt(c.c)}<br><small>${v?'gain':'coûts'}</small></div></div>`}).join(''):'<div class="n">Aucun meuble pour l\'instant.</div>';
 $('mode').textContent={Claude:'Données enregistrées dans Claude.',navigateur:'Données enregistrées dans ce navigateur : exportez régulièrement.',mémoire:'Enregistrement bloqué par le navigateur : exportez.'}[DB.mode];}
 function show(e){$('vL').classList.toggle('hide',e);$('vE').classList.toggle('hide',!e);scrollTo(0,0)}
-async function open(id){cur=M.find(m=>m.id==id)||nw();ph=[];try{ph=JSON.parse((await DB.get('meuble-photos:'+cur.id)).value)}catch(e){}
+async function open(id){cur=M.find(m=>m.id==id)||nw();ph=[];try{ph=JSON.parse((await DB.get('meuble-photos:'+cur.id)).value)}catch(e){}phf=[];try{phf=JSON.parse((await DB.get('meuble-fini:'+cur.id)).value)}catch(e){}
 document.querySelectorAll('[data-k]').forEach(e=>{const v=get(cur,e.dataset.k);e.value=v==null?'':(e.dataset.n&&v!==''?String(v).replace('.',','):v)});
 rl();gal();upd();show(1);try{history.pushState({e:1},'')}catch(e){}}
 function rl(){$('lib').innerHTML=(cur.libres||[]).map((l,i)=>`<div class="row fd"><input data-l="n${i}" placeholder="Libellé" value="${esc(l.n)}"><input data-l="v${i}" inputmode="decimal" placeholder="€" value="${esc(l.v)}" style="max-width:90px"><button class="btn d" data-r="${i}" style="flex:none">✕</button></div>`).join('')}
-function gal(){$('gal').innerHTML=ph.map((p,i)=>`<div><img src="${p}"><button data-p="${i}">✕</button></div>`).join('')}
+function gal(){$('gal').innerHTML=ph.map((p,i)=>`<div><img src="${p}"><button data-p="${i}">✕</button></div>`).join('');$('galF').innerHTML=phf.map((p,i)=>`<div><img src="${p}"><button data-f="${i}">✕</button></div>`).join('')}
 function upd(){const c=calc(cur);
 $('lv').classList.toggle('hide',!(cur.v||{}).livr);
-const T={cA:c.a,cF:c.f,cS:c.s,cT:c.c,eB:c.e,vG:c.g,vC:c.cc,vB:c.b};for(const k in T)$(k).textContent=fmt(T[k]);
+const T={cA:c.a,cF:c.f,cS:c.s,cT:c.c,eB:c.e,vG:c.g,vK:c.com,vL:c.lv,vC:c.cc,vB:c.b};for(const k in T)$(k).textContent=fmt(T[k]);
 $('eH').textContent=num(cur.heures)>0?fmt(c.e/num(cur.heures)):'—';$('vB').className=c.b>=0?'ok':'ko'}
 const rs=(d,mx,q)=>new Promise(r=>{const i=new Image();i.onload=()=>{const s=Math.min(1,mx/Math.max(i.width,i.height)),c=document.createElement('canvas');c.width=i.width*s;c.height=i.height*s;c.getContext('2d').drawImage(i,0,0,c.width,c.height);r(c.toDataURL('image/jpeg',q))};i.onerror=()=>r(d);i.src=d});
 const rd=f=>new Promise(r=>{const x=new FileReader();x.onload=()=>r(x.result);x.readAsDataURL(f)});
 function sched(){clearTimeout(tm);$('sv').textContent='';tm=setTimeout(save,600)}
-async function save(){if(!cur)return;cur.thumb=ph[0]?await rs(ph[0],120,.6):'';
-try{await DB.set('meuble:'+cur.id,JSON.stringify(cur));if(ph.length)await DB.set('meuble-photos:'+cur.id,JSON.stringify(ph));else await DB.delete('meuble-photos:'+cur.id).catch(()=>0);
+async function save(){if(!cur)return;cur.thumb=(ph[0]||phf[0])?await rs(ph[0]||phf[0],120,.6):'';
+try{await DB.set('meuble:'+cur.id,JSON.stringify(cur));if(ph.length)await DB.set('meuble-photos:'+cur.id,JSON.stringify(ph));else await DB.delete('meuble-photos:'+cur.id).catch(()=>0);if(phf.length)await DB.set('meuble-fini:'+cur.id,JSON.stringify(phf));else await DB.delete('meuble-fini:'+cur.id).catch(()=>0);
 $('sv').textContent='Enregistré · '+new Date().toLocaleTimeString('fr-FR')}catch(e){$('sv').textContent="Échec de l'enregistrement (photos trop lourdes ?)"}}
 $('vE').addEventListener('input',e=>{const t=e.target;if(t.dataset.k){set(cur,t.dataset.k,t.dataset.n?t.value:t.value);}
 else if(t.dataset.l){const k=t.dataset.l;cur.libres[+k.slice(1)][k[0]]=t.value}upd();sched()});
 $('vE').addEventListener('click',e=>{const t=e.target;if(t.dataset.r!=null){cur.libres.splice(+t.dataset.r,1);rl();upd();sched()}
-if(t.dataset.p!=null){ph.splice(+t.dataset.p,1);gal();sched()}});
+if(t.dataset.p!=null){ph.splice(+t.dataset.p,1);gal();sched()}
+if(t.dataset.f!=null){phf.splice(+t.dataset.f,1);gal();sched()}});
 $('addL').onclick=()=>{cur.libres.push({n:'',v:''});rl()};
 $('phB').onclick=()=>$('phF').click();
 $('phF').onchange=async e=>{for(const f of e.target.files)ph.push(await rs(await rd(f),800,.7));e.target.value='';gal();sched()};
+$('phFB').onclick=()=>$('phFF').click();
+$('phFF').onchange=async e=>{for(const f of e.target.files)phf.push(await rs(await rd(f),800,.7));e.target.value='';gal();sched()};
 $('add').onclick=()=>{cur=null;open()};
 $('list').onclick=e=>{const i=e.target.closest('.it');if(i)open(i.dataset.i)};
 async function close(){await save();show(0);load()}
 $('back').onclick=()=>{try{history.back()}catch(e){close()}};
 addEventListener('popstate',()=>{if(!$('vE').classList.contains('hide'))close()});
 $('del').onclick=async()=>{if(!dc){$('del').textContent='Confirmer la suppression';dc=setTimeout(()=>{dc=0;$('del').textContent='Supprimer'},4000);return}
-clearTimeout(dc);dc=0;$('del').textContent='Supprimer';clearTimeout(tm);const id=cur.id;cur=null;for(const k of['meuble:','meuble-photos:'])try{await DB.delete(k+id)}catch(e){}
+clearTimeout(dc);dc=0;$('del').textContent='Supprimer';clearTimeout(tm);const id=cur.id;cur=null;for(const k of['meuble:','meuble-photos:','meuble-fini:'])try{await DB.delete(k+id)}catch(e){}
 show(0);load()};
 $('pdf').onclick=()=>{const m=cur,c=calc(m),v=m.v||{},r=(a,b)=>`<tr><td>${a}</td><td>${b}</td></tr>`,q=(a,n)=>n?r(a,fmt(n)):'',
 dm=[m.dimL,m.dimW,m.dimH].some(x=>x)?`${esc(m.dimL||'?')} × ${esc(m.dimW||'?')} × ${esc(m.dimH||'?')} cm`:'—';
 $('pa').innerHTML=`<h2>${esc(m.nom||'Sans nom')}</h2>${ph.slice(0,4).map(p=>`<img src="${p}">`).join('')}
-<table>${r('Dimensions',dm)}${r('Acheté le',esc(m.achatDate||'—'))}${r('Trouvé',esc(m.source||'—')+' · '+esc(m.commune||'—'))}${r('Commentaire',esc(m.comment||'—'))}</table>
+<table>${r('Dimensions',dm)}${r('Acheté le',esc(m.achatDate||'—'))}${r('Trouvé',esc([m.source,m.site].filter(x=>x).join(' · ')||'—'))}${r('Vendeur / donateur',esc(m.vendeur||'—'))}${r('Lieu',esc([m.adresse,m.commune].filter(x=>x).join(', ')||'—'))}${r('Commentaire',esc(m.comment||'—'))}</table>
 <b>Coûts</b><table>${q('Achat du meuble',c.a)}${q('Carburant',c.f)}${q('Sablage',c.s)}${q('Menuiserie',num(m.menuiserie))}${q('Serrures',num(m.serrures))}${q('Peinture',num(m.peinture))}${q('Déco',num(m.deco))}${(m.libres||[]).map(l=>q(esc(l.n||'Divers'),num(l.v))).join('')}${r('<b>Total</b>','<b>'+fmt(c.c)+'</b>')}</table>
 <b>Estimation</b><table>${r('Temps estimé',num(m.heures)?num(m.heures)+' h':'—')}${r('Prix de vente estimé',fmt(num(m.prixEst)))}${r('Bénéfice estimé',fmt(c.e))}</table>
-${m.statut=='vendu'?`<b>Vente</b><table>${r('Date',esc(v.date||'—'))}${r('Acheteur',esc(v.acheteur||'—'))}${r('Adresse',esc(v.adresse||'—'))}${r('Paiement',esc(v.paiement||'—'))}${r('Livraison',v.livr?esc(v.livLieu||'')+' '+fmt(num(v.livTarif))+(v.livMode=='charge'?' (à ma charge)':' (facturé)'):'Non')}${r('Prix réel de vente',fmt(num(v.prix)))}${r('<b>Bénéfice réel</b>','<b>'+fmt(c.b)+'</b>')}</table>`:''}`;
+${m.statut=='vendu'?`<b>Vente</b><table>${r('Date',esc(v.date||'—'))}${v.facture?r('N° de facture',esc(v.facture)):''}${v.site?r('Vendu sur',esc(v.site)):''}${r('Acheteur',esc(v.acheteur||'—'))}${r('Adresse',esc(v.adresse||'—'))}${r('Paiement',esc(v.paiement||'—'))}${r('Livraison',v.livr?esc(v.livLieu||'')+' '+fmt(num(v.livTarif)):'Non')}${r("Prix payé par l'acheteur",fmt(num(v.prix)))}${c.com?r('Commission plateforme',fmt(c.com)):''}${r('Recette reçue',fmt(c.g))}${c.lv?r("Livraison payée par l'acheteur",fmt(c.lv)):''}${r('<b>Gain pour moi</b>','<b>'+fmt(c.b)+'</b>')}</table>${phf.slice(0,4).map(p=>`<img src="${p}">`).join('')}`:''}`;
 $('po').classList.remove('hide')};
 $('pc').onclick=()=>$('po').classList.add('hide');$('pp').onclick=()=>print();
 $('exp').onclick=async()=>{const o={};for(const k of(await DB.list('meuble')).keys)try{o[k]=(await DB.get(k)).value}catch(e){}
